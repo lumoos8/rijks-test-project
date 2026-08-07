@@ -1,0 +1,19 @@
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pagination-button {
+  align-items: center;
+  border: 1px solid #9f9d9d;
+  border-radius: 4px;
+  padding: 4px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+}
+
+.pagination-button:not(:disabled):hover {
+  background-color: #bbe0ed;
+}
