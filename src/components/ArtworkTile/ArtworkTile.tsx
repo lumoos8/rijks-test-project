@@ -1,4 +1,4 @@
-import type { Artwork } from "../../types/artwork.ts";
+import type { Artwork } from "../../types/types.ts";
 import "./ArtworkTile.css";
 
 type ArtworkTileProps = {

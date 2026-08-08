@@ -4,6 +4,7 @@
   align-items: center;
   border: 1px solid #ccc;
   width: 300px;
+  height: 350px;
   -webkit-appearance: none;
   appearance: none;
   background: transparent;
@@ -15,7 +16,8 @@
 }
 
 .artwork-image {
-  width: 300px;
+  max-width: 300px;
+  max-height: 240px;
   height: auto;
 }
 

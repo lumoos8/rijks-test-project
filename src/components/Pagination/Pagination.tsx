@@ -1,15 +1,16 @@
 import "./Pagination.css";
 
-import mockArtworks from "../../data/mockArtworks";
-
 type PaginationProps = {
   chosenPage: number;
   onChosenPage: (page: number) => void;
+  totalPages: number;
 };
 
-export const Pagination = ({ chosenPage, onChosenPage }: PaginationProps) => {
-  const totalPages = Math.ceil(mockArtworks.length / 10);
-
+export const Pagination = ({
+  chosenPage,
+  onChosenPage,
+  totalPages,
+}: PaginationProps) => {
   const isFirstPage = chosenPage === 1;
 
   const isLastPage = chosenPage === totalPages;

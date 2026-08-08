@@ -5,3 +5,12 @@ export type Artwork = {
   description: string;
   imageUrl: string;
 };
+
+type OrderedItem = {
+  id: string;
+  type: string;
+};
+
+export type Collection = {
+  orderedItems: OrderedItem[];
+};
