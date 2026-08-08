@@ -1,18 +1,27 @@
 import "./App.css";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { ArtworkTile } from "./components/ArtworkTile/ArtworkTile";
 import { ArtworkModal } from "./components/ArtworkModal/ArtworkModal";
 import { Pagination } from "./components/Pagination/Pagination";
 
-import mockArtworks from "./data/mockArtworks";
-
-import type { Artwork } from "./types/artwork";
+import type { Artwork } from "./types/types";
+import RijksMuseumApi from "./api/rijksApi";
 
 function App() {
+  const [artworks, setArtworks] = useState<Artwork[]>([]);
   const [selectedArtwork, setSelectedArtwork] = useState<Artwork | null>(null);
   const [chosenPage, setChosenPage] = useState(1);
+
+  useEffect(() => {
+    async function loadArtworks() {
+      const processedArtworks = await RijksMuseumApi.getArtworks();
+      setArtworks(processedArtworks);
+    }
+
+    loadArtworks();
+  }, []);
 
   const handleClick = (artwork: Artwork) => {
     setSelectedArtwork(artwork);
@@ -26,7 +35,9 @@ function App() {
   const start = (chosenPage - 1) * pageSize;
   const end = chosenPage * pageSize;
 
-  const visibleArtworks = mockArtworks.slice(start, end);
+  const visibleArtworks = artworks.slice(start, end);
+
+  const totalPages = Math.ceil(artworks.length / 10);
 
   return (
     <div className="container">
@@ -44,7 +55,11 @@ function App() {
       {selectedArtwork && (
         <ArtworkModal artwork={selectedArtwork} onClose={handleClose} />
       )}
-      <Pagination chosenPage={chosenPage} onChosenPage={setChosenPage} />
+      <Pagination
+        totalPages={totalPages}
+        chosenPage={chosenPage}
+        onChosenPage={setChosenPage}
+      />
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import type { Artwork } from "../../types/artwork";
+import type { Artwork } from "../../types/types";
 import "./ArtworkModal.css";
 
 type ArtworkModalProps = {
