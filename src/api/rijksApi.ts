@@ -1,4 +1,4 @@
-import type { Collection } from "../types/types";
+import type { Collection, Artwork } from "../types/types";
 
 class RijksApi {
   async getCollection() {
@@ -21,12 +21,19 @@ class RijksApi {
 
   async getArtworks(ids: string[]) {
     const fetchedArtworks = await Promise.all(
-      ids.map((id) =>
-        fetch(`https://data.rijksmuseum.nl/${id}?_profile=dc`).then((r) =>
-          r.json(),
-        ),
-      ),
-    );
+      ids.map(async (id) => {
+        const response = await fetch(
+          `https://data.rijksmuseum.nl/${id}?_profile=dc`
+          );
+
+        if (!response.ok) {
+          throw new Error(
+            `Failed to load artwork ${id}: ${response.status}`,
+          );
+        }
+        return response.json()
+      }),
+    )
 
     const processedArtworks: Artwork[] = fetchedArtworks.map((artwork) => ({
       id: artwork["@id"],

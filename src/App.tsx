@@ -51,7 +51,7 @@ function App() {
   return (
     <div className="container">
       <h1 className="title">Rijksmuseum Artworks</h1>
-      {isLoaded && !error && (
+      {isLoaded && !error && visibleArtworks.length > 0 && (
         <section className="artworks">
           {visibleArtworks.map((artwork) => (
             <ArtworkTile
@@ -64,15 +64,19 @@ function App() {
       )}
       {!isLoaded && <p>Loading...</p>}
       {isLoaded && error && <p>{error}</p>}
+      {isLoaded && !error && visibleArtworks.length === 0 && (
+        <p>No artworks found.</p>
+      )}
 
       {selectedArtwork && (
         <ArtworkModal artwork={selectedArtwork} onClose={handleClose} />
       )}
-      <Pagination
+      {totalPages > 1 && (<Pagination
         totalPages={totalPages}
         chosenPage={chosenPage}
         onChosenPage={setChosenPage}
       />
+      )}
     </div>
   );
 }
