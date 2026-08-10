@@ -13,11 +13,20 @@ function App() {
   const [artworks, setArtworks] = useState<Artwork[]>([]);
   const [selectedArtwork, setSelectedArtwork] = useState<Artwork | null>(null);
   const [chosenPage, setChosenPage] = useState(1);
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     async function loadArtworks() {
-      const processedArtworks = await RijksMuseumApi.getArtworks();
-      setArtworks(processedArtworks);
+      try {
+        const artworksIds = await RijksMuseumApi.getCollection();
+        const processedArtworks = await RijksMuseumApi.getArtworks(artworksIds);
+        setArtworks(processedArtworks);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Something went wrong");
+      } finally {
+        setIsLoaded(true);
+      }
     }
 
     loadArtworks();
@@ -42,24 +51,32 @@ function App() {
   return (
     <div className="container">
       <h1 className="title">Rijksmuseum Artworks</h1>
-      <section className="artworks">
-        {visibleArtworks.map((artwork) => (
-          <ArtworkTile
-            key={artwork.id}
-            artwork={artwork}
-            onClick={handleClick}
-          />
-        ))}
-      </section>
+      {isLoaded && !error && visibleArtworks.length > 0 && (
+        <section className="artworks">
+          {visibleArtworks.map((artwork) => (
+            <ArtworkTile
+              key={artwork.id}
+              artwork={artwork}
+              onClick={handleClick}
+            />
+          ))}
+        </section>
+      )}
+      {!isLoaded && <p>Loading...</p>}
+      {isLoaded && error && <p>{error}</p>}
+      {isLoaded && !error && visibleArtworks.length === 0 && (
+        <p>No artworks found.</p>
+      )}
 
       {selectedArtwork && (
         <ArtworkModal artwork={selectedArtwork} onClose={handleClose} />
       )}
-      <Pagination
+      {totalPages > 1 && (<Pagination
         totalPages={totalPages}
         chosenPage={chosenPage}
         onChosenPage={setChosenPage}
       />
+      )}
     </div>
   );
 }

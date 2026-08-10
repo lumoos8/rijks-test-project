@@ -1,24 +1,39 @@
-import type { Collection } from "../types/types";
+import type { Collection, Artwork } from "../types/types";
 
 class RijksApi {
-  async getArtworks() {
-    const data: Collection = await fetch(
+  async getCollection() {
+    const response = await fetch(
       "https://data.rijksmuseum.nl/search/collection",
-    ).then((r) => r.json());
+    );
 
-    const ids = data.orderedItems.map(({ id }) => {
+    if (!response.ok) {
+      throw new Error(`Server said: ${response.status}`);
+    }
+
+    const data: Collection = await response.json();
+
+    return data.orderedItems.map(({ id }) => {
       const searchString = "/";
       const slashIndex = id.lastIndexOf(searchString);
       return id.slice(slashIndex);
     });
+  }
 
+  async getArtworks(ids: string[]) {
     const fetchedArtworks = await Promise.all(
-      ids.map((id) =>
-        fetch(`https://data.rijksmuseum.nl/${id}?_profile=dc`).then((r) =>
-          r.json(),
-        ),
-      ),
-    );
+      ids.map(async (id) => {
+        const response = await fetch(
+          `https://data.rijksmuseum.nl/${id}?_profile=dc`
+          );
+
+        if (!response.ok) {
+          throw new Error(
+            `Failed to load artwork ${id}: ${response.status}`,
+          );
+        }
+        return response.json()
+      }),
+    )
 
     const processedArtworks: Artwork[] = fetchedArtworks.map((artwork) => ({
       id: artwork["@id"],
