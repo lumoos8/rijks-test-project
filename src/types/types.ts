@@ -11,6 +11,14 @@ type OrderedItem = {
   type: string;
 };
 
-export type Collection = {
+export type CollectionApiModel = {
+  partOf: {
+    totalItems: number
+  };
   orderedItems: OrderedItem[];
 };
+
+export type ArtworksCollection = {
+  totalArtworks: number;
+  artworksIds: string[];
+}

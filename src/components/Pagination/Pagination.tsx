@@ -24,6 +24,7 @@ export const Pagination = ({
   const handleNextPageClick = () => {
     if (!isLastPage) {
       onChosenPage(chosenPage + 1);
+      
     }
   };
 

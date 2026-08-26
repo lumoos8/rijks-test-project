@@ -6,11 +6,17 @@ import { ArtworkTile } from "./components/ArtworkTile/ArtworkTile";
 import { ArtworkModal } from "./components/ArtworkModal/ArtworkModal";
 import { Pagination } from "./components/Pagination/Pagination";
 
-import type { Artwork } from "./types/types";
+import { type ArtworksCollection, type Artwork } from "./types/types";
 import RijksMuseumApi from "./api/rijksApi";
 
+const PAGE_SIZE = 10;
+
 function App() {
-  const [artworks, setArtworks] = useState<Artwork[]>([]);
+  const [detailedArtworks, setDetailedArtworks] = useState<Artwork[]>([]);
+  const [artworksCollection, setArtworksCollection] = useState<ArtworksCollection>({
+  totalArtworks: 0,
+  artworksIds: [],
+  });
   const [selectedArtwork, setSelectedArtwork] = useState<Artwork | null>(null);
   const [chosenPage, setChosenPage] = useState(1);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -19,9 +25,10 @@ function App() {
   useEffect(() => {
     async function loadArtworks() {
       try {
-        const artworksIds = await RijksMuseumApi.getCollection();
-        const processedArtworks = await RijksMuseumApi.getArtworks(artworksIds);
-        setArtworks(processedArtworks);
+        const artworksCollection = await RijksMuseumApi.getCollection();
+        const processedArtworks = await RijksMuseumApi.getArtworks(artworksCollection.artworksIds.slice(0, PAGE_SIZE));
+        setDetailedArtworks(processedArtworks);
+        setArtworksCollection(artworksCollection)
       } catch (err) {
         setError(err instanceof Error ? err.message : "Something went wrong");
       } finally {
@@ -40,13 +47,26 @@ function App() {
     setSelectedArtwork(null);
   };
 
-  const pageSize = 10;
-  const start = (chosenPage - 1) * pageSize;
-  const end = chosenPage * pageSize;
+  const handleChosenPage =  async (newPage: number) => {
+    const start = (newPage - 1) * PAGE_SIZE;
+    const end = newPage * PAGE_SIZE;
 
-  const visibleArtworks = artworks.slice(start, end);
+    setChosenPage(newPage);
 
-  const totalPages = Math.ceil(artworks.length / 10);
+    if(detailedArtworks.length <= start) {
+
+      const processedArtworks = await RijksMuseumApi.getArtworks(artworksCollection.artworksIds.slice(start, end))
+      
+      setDetailedArtworks([...detailedArtworks, ...processedArtworks]);
+    }
+  }
+
+  const start = (chosenPage - 1) * PAGE_SIZE;
+  const end = chosenPage * PAGE_SIZE;
+
+  const visibleArtworks = detailedArtworks.slice(start, end);
+
+  const totalPages = Math.ceil(artworksCollection.totalArtworks / PAGE_SIZE);
 
   return (
     <div className="container">
@@ -74,7 +94,8 @@ function App() {
       {totalPages > 1 && (<Pagination
         totalPages={totalPages}
         chosenPage={chosenPage}
-        onChosenPage={setChosenPage}
+        onChosenPage={handleChosenPage}
+
       />
       )}
     </div>
