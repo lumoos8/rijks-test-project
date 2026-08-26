@@ -1,7 +1,7 @@
-import type { Collection, Artwork } from "../types/types";
+import type { CollectionApiModel, Artwork, ArtworksCollection } from "../types/types";
 
 class RijksApi {
-  async getCollection() {
+  async getCollection(): Promise<ArtworksCollection> {
     const response = await fetch(
       "https://data.rijksmuseum.nl/search/collection",
     );
@@ -10,14 +10,19 @@ class RijksApi {
       throw new Error(`Server said: ${response.status}`);
     }
 
-    const data: Collection = await response.json();
+    const data: CollectionApiModel = await response.json();
 
-    return data.orderedItems.map(({ id }) => {
+   const artworkIds = data.orderedItems.map(({ id }) => {
       const searchString = "/";
       const slashIndex = id.lastIndexOf(searchString);
       return id.slice(slashIndex);
     });
-  }
+
+    return {
+      totalArtworks: data.partOf.totalItems,
+      artworksIds: artworkIds
+    }
+  } 
 
   async getArtworks(ids: string[]) {
     const fetchedArtworks = await Promise.all(
