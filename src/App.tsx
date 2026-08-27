@@ -13,10 +13,11 @@ const PAGE_SIZE = 10;
 
 function App() {
   const [detailedArtworks, setDetailedArtworks] = useState<Artwork[]>([]);
-  const [artworksCollection, setArtworksCollection] = useState<ArtworksCollection>({
-  totalArtworks: 0,
-  artworksIds: [],
-  });
+  const [artworksCollection, setArtworksCollection] =
+    useState<ArtworksCollection>({
+      totalArtworks: 0,
+      artworksIds: [],
+    });
   const [selectedArtwork, setSelectedArtwork] = useState<Artwork | null>(null);
   const [chosenPage, setChosenPage] = useState(1);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -26,9 +27,11 @@ function App() {
     async function loadArtworks() {
       try {
         const artworksCollection = await RijksMuseumApi.getCollection();
-        const processedArtworks = await RijksMuseumApi.getArtworks(artworksCollection.artworksIds.slice(0, PAGE_SIZE));
+        const processedArtworks = await RijksMuseumApi.getArtworks(
+          artworksCollection.artworksIds.slice(0, PAGE_SIZE),
+        );
         setDetailedArtworks(processedArtworks);
-        setArtworksCollection(artworksCollection)
+        setArtworksCollection(artworksCollection);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Something went wrong");
       } finally {
@@ -47,19 +50,40 @@ function App() {
     setSelectedArtwork(null);
   };
 
-  const handleChosenPage =  async (newPage: number) => {
-    const start = (newPage - 1) * PAGE_SIZE;
-    const end = newPage * PAGE_SIZE;
+  const handleChosenPage = async (newPage: number) => {
+    const start = (newPage - 1) * PAGE_SIZE; // 100
+    const end = newPage * PAGE_SIZE; //110
 
     setChosenPage(newPage);
 
-    if(detailedArtworks.length <= start) {
+    let newArtworkCollection: ArtworksCollection = artworksCollection;
 
-      const processedArtworks = await RijksMuseumApi.getArtworks(artworksCollection.artworksIds.slice(start, end))
-      
+    if (
+      artworksCollection.nextPartOfCollectionUrl &&
+      artworksCollection.artworksIds.length <= start
+    ) {
+      const nextPartOfCollection = await RijksMuseumApi.getCollection(
+        artworksCollection.nextPartOfCollectionUrl,
+      );
+
+      newArtworkCollection = {
+        ...nextPartOfCollection,
+        artworksIds: [
+          ...artworksCollection.artworksIds,
+          ...nextPartOfCollection.artworksIds,
+        ],
+      };
+      setArtworksCollection(newArtworkCollection);
+    }
+
+    if (detailedArtworks.length <= start) {
+      const processedArtworks = await RijksMuseumApi.getArtworks(
+        newArtworkCollection.artworksIds.slice(start, end),
+      );
+
       setDetailedArtworks([...detailedArtworks, ...processedArtworks]);
     }
-  }
+  };
 
   const start = (chosenPage - 1) * PAGE_SIZE;
   const end = chosenPage * PAGE_SIZE;
@@ -91,12 +115,12 @@ function App() {
       {selectedArtwork && (
         <ArtworkModal artwork={selectedArtwork} onClose={handleClose} />
       )}
-      {totalPages > 1 && (<Pagination
-        totalPages={totalPages}
-        chosenPage={chosenPage}
-        onChosenPage={handleChosenPage}
-
-      />
+      {totalPages > 1 && (
+        <Pagination
+          totalPages={totalPages}
+          chosenPage={chosenPage}
+          onChosenPage={handleChosenPage}
+        />
       )}
     </div>
   );
