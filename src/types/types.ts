@@ -13,12 +13,16 @@ type OrderedItem = {
 
 export type CollectionApiModel = {
   partOf: {
-    totalItems: number
+    totalItems: number;
   };
   orderedItems: OrderedItem[];
+  next?: {
+    id: string;
+  };
 };
 
 export type ArtworksCollection = {
   totalArtworks: number;
   artworksIds: string[];
-}
+  nextPartOfCollectionUrl?: string;
+};
